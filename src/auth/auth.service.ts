@@ -4,6 +4,7 @@ import { UsersModel } from '../users/entities/users.entity';
 import { HASH_ROUNDS, JWT_SECRET } from './const/auth.const';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
+import { RegisterUserDto } from './dto/register-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -14,9 +15,9 @@ export class AuthService {
    * {authorization: 'Bearer {token}'} 사용
    */
   extractTokenFromHeader(header: string, isBearer: boolean) {
-    if (!header) {
-      throw new UnauthorizedException('토큰을 보내고 있지 않습니다.');
-    }
+    // if (!header) {
+    //   throw new UnauthorizedException('토큰을 보내고 있지 않습니다.');
+    // }
 
     const splitToken = header.split(' ');
 
@@ -54,10 +55,14 @@ export class AuthService {
 
   // 토큰 검증
   verifyToken(token: string) {
-    // payload 받기
-    return this.jwtService.verify(token, {
-      secret: JWT_SECRET,
-    });
+    try {
+      // payload 받기
+      return this.jwtService.verify(token, {
+        secret: JWT_SECRET,
+      });
+    } catch (e) {
+      throw new UnauthorizedException('토큰이 만료됐거나 잘못된 토큰입니다.');
+    }
   }
 
   // 원한다면 refresh를 refresh로 발급받을 수 있다고 가정하면
@@ -78,9 +83,12 @@ export class AuthService {
       );
     }
 
-    return this.signToken({
-      ...decoded,
-    }, isRefreshToken);
+    return this.signToken(
+      {
+        ...decoded,
+      },
+      isRefreshToken,
+    );
   }
 
   /**
@@ -174,7 +182,8 @@ export class AuthService {
   }
 
   async registerWithEmail(
-    user: Pick<UsersModel, 'nickname' | 'email' | 'password'>,
+    // user: Pick<UsersModel, 'nickname' | 'email' | 'password'>,
+    user: RegisterUserDto,
   ) {
     // salt는 자동생성
     const hash = await bcrypt.hash(user.password, HASH_ROUNDS);

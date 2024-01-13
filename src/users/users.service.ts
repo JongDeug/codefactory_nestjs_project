@@ -19,7 +19,7 @@ export class UsersService {
       },
     });
 
-    if(nicknameExists){
+    if (nicknameExists) {
       throw new BadRequestException('이미 존재하는 nickname 입니다!');
     }
 
@@ -29,7 +29,7 @@ export class UsersService {
       },
     });
 
-    if(emailExists){
+    if (emailExists) {
       throw new BadRequestException('이미 가입한 이메일입니다!');
     }
 
