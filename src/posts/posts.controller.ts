@@ -8,7 +8,9 @@ import {
   Post,
   Put,
   UseGuards,
-  Request, Patch,
+  Request,
+  Patch,
+  Query, UseInterceptors, UploadedFile,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { AccessTokenGuard } from '../auth/guard/bearer-token.guard';
@@ -16,6 +18,8 @@ import { UsersModel } from '../users/entities/users.entity';
 import { User } from '../users/decorator/users.decorator';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { PaginatePostDto } from './dto/paginate-post.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('posts')
 export class PostsController {
@@ -23,8 +27,17 @@ export class PostsController {
 
   // 1) GET /posts
   @Get()
-  getPosts() {
-    return this.postsService.getAllPosts();
+  getPosts(@Query() query: PaginatePostDto) {
+    // return this.postsService.getAllPosts();
+    return this.postsService.paginatePosts(query);
+  }
+
+  @Post('/random')
+  @UseGuards(AccessTokenGuard)
+  async postPostRandom(@User() user: UsersModel) {
+    await this.postsService.generatePosts(user.id);
+
+    return true;
   }
 
   // 2) GET /posts:id
@@ -38,12 +51,13 @@ export class PostsController {
   // DTO - Data Transfer Object
   @Post()
   @UseGuards(AccessTokenGuard)
-  postPosts(
+  async postPosts(
     @User('id') userId: number,
     // @Body('title') title: string,
     // @Body('content') content: string,
     @Body() body: CreatePostDto,
   ) {
+    await this.postsService.createPostImage(body)
     return this.postsService.createPost(userId, body);
   }
 

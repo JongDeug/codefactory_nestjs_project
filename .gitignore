@@ -36,3 +36,6 @@ lerna-debug.log*
 
 # post-gres
 postgres-data
+
+# config file
+/.env
