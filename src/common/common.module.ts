@@ -13,6 +13,8 @@ import { v4 as uuid } from 'uuid';
 import { AuthService } from '../auth/auth.service';
 import { AuthModule } from '../auth/auth.module';
 import { UsersModule } from '../users/users.module';
+import { PostsModel } from '../posts/entities/posts.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [

@@ -5,12 +5,11 @@ import {
   Get,
   Param,
   ParseIntPipe,
-  Post,
-  Put,
-  UseGuards,
-  Request,
   Patch,
-  Query, UseInterceptors, UploadedFile,
+  Post,
+  Query,
+  UseGuards, UseInterceptors,
+  Request, InternalServerErrorException, UseFilters, HttpException, BadRequestException,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { AccessTokenGuard } from '../auth/guard/bearer-token.guard';
@@ -19,15 +18,30 @@ import { User } from '../users/decorator/users.decorator';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PaginatePostDto } from './dto/paginate-post.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { ImageModelType } from '../common/entity/images.entity';
+import { DataSource, QueryRunner as QR } from 'typeorm';
+import { PostsImagesService } from './image/images.service';
+import { LogInterceptor } from '../common/interceptor/log.interceptor';
+import { TransactionInterceptor } from '../common/interceptor/transaction.interceptor';
+import { QueryRunner } from '../common/decorator/query-runner.decorator';
+import { HttpExceptionFilter } from '../common/exception-filter/http.exception-filter';
 
 @Controller('posts')
 export class PostsController {
-  constructor(private readonly postsService: PostsService) {}
+  constructor(
+    private readonly postsService: PostsService,
+    private readonly dataSource: DataSource,
+    private readonly postsImagesService: PostsImagesService,
+  ) {}
 
   // 1) GET /posts
   @Get()
+  // @UseInterceptors(LogInterceptor)
+  // @UseFilters(HttpExceptionFilter)
   getPosts(@Query() query: PaginatePostDto) {
+    // Exception 필터 적용했을 때 다르게 나옴!!
+    // throw new BadRequestException('exception test');
+
     // return this.postsService.getAllPosts();
     return this.postsService.paginatePosts(query);
   }
@@ -43,7 +57,7 @@ export class PostsController {
   // 2) GET /posts:id
   @Get(':id')
   getPost(@Param('id', ParseIntPipe) id: number) {
-    return this.postsService.getPostById(id);
+    return this.postsService.getPostById(id, null);
   }
 
   // 3) POST /posts
@@ -51,14 +65,30 @@ export class PostsController {
   // DTO - Data Transfer Object
   @Post()
   @UseGuards(AccessTokenGuard)
+  @UseInterceptors(TransactionInterceptor)
   async postPosts(
     @User('id') userId: number,
     // @Body('title') title: string,
     // @Body('content') content: string,
     @Body() body: CreatePostDto,
+    @QueryRunner() qr: QR,
   ) {
-    await this.postsService.createPostImage(body)
-    return this.postsService.createPost(userId, body);
+      const post = await this.postsService.createPost(userId, body, qr);
+
+
+      for (let i = 0; i < body.images.length; i++) {
+        await this.postsImagesService.createPostImage(
+          {
+            post,
+            order: i,
+            path: body.images[i],
+            type: ImageModelType.POST_IMAGE,
+          },
+          qr,
+        );
+      }
+
+      return this.postsService.getPostById(post.id, qr);
   }
 
   // @Post()
