@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { PostsModel } from '../../posts/entities/posts.entity';
+import { PostsModel } from '../../posts/entity/posts.entity';
 import { RolesEnum } from '../const/roles.const';
 import { BaseModel } from '../../common/entity/base.entity';
 import {
@@ -22,6 +22,7 @@ import { emailValidationMessage } from '../../common/validation-message/email-va
 import { Exclude, Expose } from 'class-transformer';
 import { ChatsModel } from '../../chats/entity/chats.entity';
 import { MessagesModel } from '../../chats/messages/entity/messages.entity';
+import { CommentsModel } from '../../posts/comments/entity/comments.entity';
 
 @Entity()
 // @Exclude()
@@ -111,4 +112,7 @@ export class UsersModel extends BaseModel {
 
   @OneToMany(() => MessagesModel, (message) => message.author)
   messages: MessagesModel[];
+
+  @OneToMany(() => CommentsModel, (comment) => comment.post)
+  comments: CommentsModel[];
 }

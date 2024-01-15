@@ -9,7 +9,7 @@ import {
 } from '../../common/const/path.const';
 import { promises } from 'fs';
 import { CreatePostImageDto } from './dto/create-image.dto';
-import { PostsModel } from '../entities/posts.entity';
+import { PostsModel } from '../entity/posts.entity';
 
 @Injectable()
 export class PostsImagesService {

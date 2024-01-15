@@ -11,7 +11,7 @@ import {
   Repository,
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PostsModel } from './entities/posts.entity';
+import { PostsModel } from './entity/posts.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PaginatePostDto } from './dto/paginate-post.dto';
@@ -247,7 +247,17 @@ export class PostsService {
       throw new NotFoundException();
     }
 
+    // post가 아니고 postId 넣어야됨 일단 보류
     await this.postsRepository.delete(post);
+
     return postId;
+  }
+
+  async checkPostExistsById(id: number) {
+    return this.postsRepository.exists({
+      where: {
+        id,
+      },
+    });
   }
 }

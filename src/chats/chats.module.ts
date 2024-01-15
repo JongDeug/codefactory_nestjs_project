@@ -5,10 +5,15 @@ import { ChatsGateway } from './chats.gateway';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChatsModel } from './entity/chats.entity';
 import { CommonModule } from '../common/common.module';
+import { ChatsMessagesService } from './messages/messages.service';
+import { MessagesModel } from './messages/entity/messages.entity';
+import { MessagesController } from './messages/messages.controller';
+import { AuthModule } from '../auth/auth.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ChatsModel]), CommonModule], //service에 주입되는 모듈만 넣어주면됨
-  controllers: [ChatsController],
-  providers: [ChatsGateway, ChatsService],
+  imports: [TypeOrmModule.forFeature([ChatsModel, MessagesModel]), CommonModule, AuthModule, UsersModule], //service에 주입되는 모듈만 넣어주면됨
+  controllers: [ChatsController, MessagesController],
+  providers: [ChatsGateway, ChatsService, ChatsMessagesService],
 })
 export class ChatsModule {}

@@ -7,7 +7,7 @@ import {
 import { PostsService } from './posts.service';
 import { PostsController } from './posts.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PostsModel } from './entities/posts.entity';
+import { PostsModel } from './entity/posts.entity';
 import { UsersModule } from '../users/users.module';
 import { AuthModule } from '../auth/auth.module';
 import { CommonModule } from '../common/common.module';
@@ -25,6 +25,7 @@ import { LogMiddleware } from '../common/middleware/log.middleware';
     AuthModule,
     CommonModule,
   ],
+  exports: [PostsService],
   controllers: [PostsController],
   providers: [PostsService, PostsImagesService],
 })

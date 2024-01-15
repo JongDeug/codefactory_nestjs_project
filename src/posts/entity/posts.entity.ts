@@ -1,5 +1,5 @@
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { UsersModel } from '../../users/entities/users.entity';
+import { UsersModel } from '../../users/entity/users.entity';
 import { BaseModel } from '../../common/entity/base.entity';
 import { IsString } from 'class-validator';
 import { stringValidationMessage } from '../../common/validation-message/string-validation.message';
@@ -7,6 +7,7 @@ import { Transform } from 'class-transformer';
 import { POST_PUBLIC_IMAGE_PATH } from '../../common/const/path.const';
 import { join } from 'path/posix';
 import { ImagesModel } from '../../common/entity/images.entity';
+import { CommentsModel } from '../comments/entity/comments.entity';
 
 @Entity()
 export class PostsModel extends BaseModel {
@@ -45,4 +46,7 @@ export class PostsModel extends BaseModel {
 
   @Column()
   commentCount: number;
+
+  @OneToMany(() => CommentsModel, (comment) => comment.post)
+  comments: CommentsModel[];
 }
