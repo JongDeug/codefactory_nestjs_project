@@ -25,6 +25,10 @@ import { LogInterceptor } from '../common/interceptor/log.interceptor';
 import { TransactionInterceptor } from '../common/interceptor/transaction.interceptor';
 import { QueryRunner } from '../common/decorator/query-runner.decorator';
 import { HttpExceptionFilter } from '../common/exception-filter/http.exception-filter';
+import { RolesEnum } from '../users/const/roles.const';
+import { Roles } from '../users/decorator/roles.decorator';
+import { IsPublic } from '../common/decorator/is-public.decorator';
+import { IsPostMineOrAdminGuard } from './guard/is-post-mine-or-admin.guard';
 
 @Controller('posts')
 export class PostsController {
@@ -36,6 +40,7 @@ export class PostsController {
 
   // 1) GET /posts
   @Get()
+  @IsPublic()
   // @UseInterceptors(LogInterceptor)
   // @UseFilters(HttpExceptionFilter)
   getPosts(@Query() query: PaginatePostDto) {
@@ -47,7 +52,7 @@ export class PostsController {
   }
 
   @Post('/random')
-  @UseGuards(AccessTokenGuard)
+  // @UseGuards(AccessTokenGuard)
   async postPostRandom(@User() user: UsersModel) {
     await this.postsService.generatePosts(user.id);
 
@@ -56,6 +61,7 @@ export class PostsController {
 
   // 2) GET /posts:id
   @Get(':id')
+  @IsPublic()
   getPost(@Param('id', ParseIntPipe) id: number) {
     return this.postsService.getPostById(id, null);
   }
@@ -64,7 +70,7 @@ export class PostsController {
   // @User decorator을 사용하려면 반드시 AccessTokenGuard를 거쳐야 함.
   // DTO - Data Transfer Object
   @Post()
-  @UseGuards(AccessTokenGuard)
+  // @UseGuards(AccessTokenGuard)
   @UseInterceptors(TransactionInterceptor)
   async postPosts(
     @User('id') userId: number,
@@ -103,6 +109,7 @@ export class PostsController {
 
   // 4) PATCH /posts/:id
   @Patch(':id')
+  @UseGuards(IsPostMineOrAdminGuard)
   patchPost(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdatePostDto,
@@ -114,6 +121,8 @@ export class PostsController {
 
   // 5) DELETE /posts/:id
   @Delete(':id')
+  // @UseGuards(AccessTokenGuard)
+  @Roles(RolesEnum.ADMIN)
   deletePost(@Param('id', ParseIntPipe) id: number) {
     return this.postsService.deletePost(id);
   }

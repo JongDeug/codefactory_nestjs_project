@@ -28,6 +28,8 @@ import { promises } from 'fs';
 import { CreatePostImageDto } from './image/dto/create-image.dto';
 import { ImagesModel } from '../common/entity/images.entity';
 import { DEFAULT_POST_FIND_OPTIONS } from './const/default-post-find-options.conts';
+import { UsersModule } from '../users/users.module';
+import { UsersModel } from '../users/entity/users.entity';
 
 @Injectable()
 export class PostsService {
@@ -184,6 +186,30 @@ export class PostsService {
       : this.postsRepository;
   }
 
+  async incrementCommentCount(postId: number, qr?: QueryRunner) {
+    const repository = this.getRepository(qr);
+
+    await repository.increment(
+      {
+        id: postId,
+      },
+      'commentCount',
+      1,
+    );
+  }
+
+  async decrementCommentCount(postId: number, qr?: QueryRunner) {
+    const repository = this.getRepository(qr);
+
+    await repository.decrement(
+      {
+        id: postId,
+      },
+      'commentCount',
+      1,
+    );
+  }
+
   async createPost(authorId: number, postDto: CreatePostDto, qr?: QueryRunner) {
     const repository = this.getRepository(qr);
 
@@ -248,7 +274,7 @@ export class PostsService {
     }
 
     // post가 아니고 postId 넣어야됨 일단 보류
-    await this.postsRepository.delete(post);
+    await this.postsRepository.delete(postId);
 
     return postId;
   }
@@ -257,6 +283,31 @@ export class PostsService {
     return this.postsRepository.exists({
       where: {
         id,
+      },
+    });
+  }
+
+  async isPostMine(postId: number, userId: number) {
+    // const post = await this.postsRepository.findOne({
+    //   where: {
+    //     id: postId,
+    //   },
+    // });
+    //
+    // if (!post) {
+    //   return false;
+    // }
+    //
+    // return post.author.id === userId;
+    return await this.postsRepository.exists({
+      where: {
+        id: postId,
+        author: {
+          id: userId,
+        },
+      },
+      relations: {
+        author: true,
       },
     });
   }

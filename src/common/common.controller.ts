@@ -13,7 +13,7 @@ export class CommonController {
   constructor(private readonly commonService: CommonService) {}
 
   @Post('image')
-  @UseGuards(AccessTokenGuard)
+  // @UseGuards(AccessTokenGuard)
   @UseInterceptors(FileInterceptor('image'))
   postImage(@UploadedFile() file: Express.Multer.File) {
     return {
